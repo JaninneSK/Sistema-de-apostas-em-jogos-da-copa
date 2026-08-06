@@ -44,6 +44,20 @@ class UsuarioDAO:
 
     def listar(self) -> list[Usuario]:
         return self.session.query(Usuario).all()
+    
+    def listar_ativos(self) -> list[Usuario]:
+        return (
+            self.session.query(Usuario)
+            .filter(Usuario.ativo.is_(True))
+            .all()
+        )
+    
+    def listar_inativos(self) -> list[Usuario]:
+        return (
+            self.session.query(Usuario)
+            .filter(Usuario.ativo.is_(False))
+            .all()
+        )
 
     def atualizar(self, usuario: Usuario) -> Usuario:
         self.session.commit()

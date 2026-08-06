@@ -16,9 +16,21 @@ class StatusAposta(str, Enum):
     ATIVA = "ATIVA"
     GANHA = "GANHA"
     PERDIDA = "PERDIDA"
-    ENCERRADA = "ENCERRADA"
+    EMPATADA = "EMPATADA"
 
 
 class Palpite(str, Enum):
     TIME_A = "TIME_A"
     TIME_B = "TIME_B"
+
+
+class Multiplicador(int, Enum):
+    X1 = 1
+    X2 = 2
+    X3 = 3
+    X4 = 4
+    X5 = 5
+    X10 = 10
+    X50 = 50
+    X100 = 100
+    X1000 = 1000

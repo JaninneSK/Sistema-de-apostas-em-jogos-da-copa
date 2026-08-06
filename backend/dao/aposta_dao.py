@@ -47,6 +47,7 @@ class ApostaDAO:
             .all()
         )
     
+
     def contar_apostas_time_a(self, partida_id: int) -> int:
         return (
             self.session.query(Aposta)
@@ -67,6 +68,16 @@ class ApostaDAO:
             )
             .count()
         )
+    
+    def buscar_por_usuario_e_partida(self, usuario_id: int, partida_id: int) -> Aposta | None:
+        return (
+            self.session.query(Aposta)
+            .filter(
+                Aposta.usuario_id == usuario_id,
+                Aposta.partida_id == partida_id
+            )
+            .first()
+        )
 
     def atualizar(self, aposta: Aposta) -> Aposta:
         self.session.commit()
@@ -76,3 +87,14 @@ class ApostaDAO:
     def deletar(self, aposta: Aposta) -> None:
         self.session.delete(aposta)
         self.session.commit()
+
+    def possui_aposta_ativa(self, usuario_id: int) -> bool: 
+        return (
+            self.session.query(Aposta)
+            .filter(
+                Aposta.usuario_id == usuario_id,
+                Aposta.status == StatusAposta.ATIVA
+            )
+            .first()
+            is not None
+        )
