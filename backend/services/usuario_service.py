@@ -59,6 +59,9 @@ class UsuarioService:
         if not usuario:
             return None
 
+        if not usuario.ativo:
+            return None
+
         senha_hash = gerar_hash_senha(senha)
 
         if usuario.senha_hash != senha_hash:
@@ -78,8 +81,14 @@ class UsuarioService:
         return self.usuario_dao.buscar_por_email(email)
 
 
-    def buscar_usuario_por_cpf(self, cpf: str) -> Usuario | None:
-        return self.usuario_dao.buscar_por_cpf(cpf)
+    def buscar_usuario_por_cpf(self, cpf: str) -> Usuario:
+
+        usuario = self.usuario_dao.buscar_por_cpf(cpf)
+
+        if not usuario:
+            raise ValueError("Usuário não encontrado.")
+
+        return usuario
 
     def listar_usuarios(self) -> list[Usuario]:
         return self.usuario_dao.listar()
@@ -89,6 +98,9 @@ class UsuarioService:
     
     def listar_usuarios_inativos(self) -> list[Usuario]:
         return self.usuario_dao.listar_inativos()
+
+    def listar_ranking(self) -> list[Usuario]:
+        return self.usuario_dao.listar_ranking()
 
     def atualizar_usuario(self, usuario_id: int, dados: UsuarioAtualizacaoSchema) -> Usuario:
 
@@ -124,3 +136,18 @@ class UsuarioService:
         usuario.ativo = False
 
         return self.usuario_dao.atualizar(usuario)
+
+    def validar_admin(self, usuario_id: int) -> Usuario:
+
+        usuario = self.usuario_dao.buscar_por_id(usuario_id)
+
+        if not usuario:
+            raise ValueError("Usuário não encontrado.")
+
+        if usuario.tipo != TipoUsuario.ADMIN:
+            raise ValueError("Acesso permitido apenas para administradores.")
+
+        if not usuario.ativo:
+            raise ValueError("Administrador inativo.")
+
+        return usuario

@@ -59,6 +59,13 @@ class UsuarioDAO:
             .all()
         )
 
+    def listar_ranking(self) -> list[Usuario]:
+        return (
+            self.session.query(Usuario)
+            .order_by(Usuario.quantidade_acertos.desc())
+            .all()
+        )
+
     def atualizar(self, usuario: Usuario) -> Usuario:
         self.session.commit()
         self.session.refresh(usuario)

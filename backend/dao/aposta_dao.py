@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
 from backend.models.aposta import Aposta
-from backend.utils.enums import StatusAposta
 from backend.utils.enums import StatusAposta, Palpite
 
 

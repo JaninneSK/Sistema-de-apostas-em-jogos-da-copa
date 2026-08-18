@@ -4,7 +4,7 @@ from backend.dao.partida_dao import PartidaDAO
 from backend.dao.usuario_dao import UsuarioDAO
 from backend.models.aposta import Aposta
 from backend.schemas.aposta_schema import ApostaCadastroSchema
-from backend.utils.enums import Palpite, StatusAposta, StatusPartida, TipoUsuario
+from backend.utils.enums import Palpite, StatusAposta, StatusPartida, TipoUsuario, Multiplicador
 
 
 class ApostaService:
@@ -43,6 +43,44 @@ class ApostaService:
 
     def listar_apostas_ativas(self) -> list[Aposta]:
         return self.aposta_dao.listar_ativas()
+
+    def listar_apostas_disponiveis(self) -> list[dict]:
+
+        partidas = self.partida_dao.listar_agendadas()
+
+        apostas_disponiveis = []
+
+        for partida in partidas:
+
+            odds = self.calcular_odds(partida.id)
+
+            apostas_disponiveis.append({
+                "partida": partida,
+                "odd_time_a": odds[Palpite.TIME_A],
+                "odd_time_b": odds[Palpite.TIME_B]
+            })
+
+        return apostas_disponiveis
+
+    def consultar_detalhes_partida(self, partida_id: int) -> dict:
+
+        partida = self.partida_dao.buscar_por_id(partida_id)
+
+        if not partida:
+            raise ValueError("Partida não encontrada.")
+
+        quantidade_time_a = self.aposta_dao.contar_apostas_time_a(partida_id)
+        quantidade_time_b = self.aposta_dao.contar_apostas_time_b(partida_id)
+
+        odds = self.calcular_odds(partida_id)
+
+        return {
+            "partida": partida,
+            "quantidade_time_a": quantidade_time_a,
+            "quantidade_time_b": quantidade_time_b,
+            "odd_time_a": odds[Palpite.TIME_A],
+            "odd_time_b": odds[Palpite.TIME_B]
+        }
 
     def consultar_status_aposta(self, aposta_id: int) -> StatusAposta:
 
@@ -108,8 +146,8 @@ class ApostaService:
         if aposta_existente:
             raise ValueError("O usuário já realizou uma aposta nesta partida.")
 
-        multiplicador = dados.multiplicador.value
-        valor_total = dados.valor_apostado * multiplicador
+        multiplicador = Multiplicador.X1.value
+        valor_total = dados.valor_apostado
 
         if valor_total > usuario.pontos:
             raise ValueError("O usuário não possui pontos suficientes para realizar essa aposta.")
@@ -133,6 +171,50 @@ class ApostaService:
         self.usuario_dao.atualizar(usuario)
 
         return self.aposta_dao.salvar(aposta)
+
+    def multiplicar_aposta(self, usuario_id: int, aposta_id: int, novo_multiplicador: Multiplicador) -> Aposta:
+
+        aposta = self.aposta_dao.buscar_por_id(aposta_id)
+
+        if not aposta:
+            raise ValueError("Aposta não encontrada.")
+
+        if aposta.usuario_id != usuario_id:
+            raise ValueError("Essa aposta não pertence ao usuário.")
+
+        if aposta.status != StatusAposta.ATIVA:
+            raise ValueError("Só é possível multiplicar uma aposta ativa.")
+
+        partida = self.partida_dao.buscar_por_id(aposta.partida_id)
+
+        if not partida:
+            raise ValueError("Partida não encontrada.")
+
+        if partida.status != StatusPartida.AGENDADA:
+            raise ValueError("Não é possível multiplicar a aposta após o início da partida.")
+
+        multiplicador_atual = aposta.multiplicador
+        multiplicador_novo = novo_multiplicador.value
+
+        if multiplicador_novo <= multiplicador_atual:
+            raise ValueError("O novo multiplicador deve ser maior que o atual.")
+
+        usuario = self.usuario_dao.buscar_por_id(usuario_id)
+
+        if not usuario:
+            raise ValueError("Usuário não encontrado.")
+
+        valor_adicional = aposta.valor_apostado * (multiplicador_novo - multiplicador_atual)
+
+        if valor_adicional > usuario.pontos:
+            raise ValueError("O usuário não possui pontos suficientes para multiplicar essa aposta.")
+
+        usuario.pontos -= valor_adicional
+        aposta.multiplicador = multiplicador_novo
+
+        self.usuario_dao.atualizar(usuario)
+
+        return self.aposta_dao.atualizar(aposta)
     
     def identificar_vencedor(self, partida_id: int) -> Palpite | None:
 
@@ -210,8 +292,9 @@ class ApostaService:
                 aposta.status = StatusAposta.PERDIDA
                 aposta.pontos_ganhos = 0
 
-            self.usuario_dao.atualizar(usuario)
             self.aposta_dao.atualizar(aposta)
+            self._verificar_inativacao_usuario(usuario)
+            self.usuario_dao.atualizar(usuario)
 
         return apostas
     

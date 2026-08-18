@@ -2,6 +2,7 @@ from backend.api.football_data_api import FootballDataAPI
 from backend.dao.partida_dao import PartidaDAO
 from backend.models.partida import Partida
 from backend.utils.enums import StatusPartida
+from backend.schemas.partida_schema import PartidaImportacaoSchema
 
 
 class PartidaService:
@@ -85,3 +86,19 @@ class PartidaService:
         partida.status = StatusPartida.FINALIZADA
 
         return self.partida_dao.atualizar(partida)
+
+    def buscar_resultados_por_selecao(self, selecao: str) -> list[PartidaImportacaoSchema]:
+
+        partidas = self.football_api.buscar_partidas_copa_2026()
+
+        resultados = []
+
+        for partida in partidas:
+
+            if partida.status != StatusPartida.FINALIZADA:
+                continue
+
+            if partida.time_a.lower() == selecao.lower() or partida.time_b.lower() == selecao.lower():
+                resultados.append(partida)
+
+        return resultados
