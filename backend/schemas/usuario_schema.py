@@ -40,7 +40,7 @@ class UsuarioResponseSchema(BaseModel):
 
     id: int
     nome: str
-    email: str
+    email: EmailStr
     pontos: int
     quantidade_acertos: int
     tipo: TipoUsuario

@@ -1,5 +1,6 @@
 from backend.dao.usuario_dao import UsuarioDAO
 from backend.models.usuario import Usuario
+from backend.utils.enums import TipoUsuario
 from backend.schemas.usuario_schema import (
     UsuarioCadastroSchema,
     UsuarioAtualizacaoSchema
@@ -45,7 +46,8 @@ class UsuarioService:
             cpf=dados.cpf,
             data_nascimento=dados.data_nascimento,
             login=dados.login,
-            senha_hash=gerar_hash_senha(dados.senha)
+            senha_hash=gerar_hash_senha(dados.senha),
+            tipo=TipoUsuario.USUARIO
         )
 
         return self.usuario_dao.salvar(usuario)

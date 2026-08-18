@@ -55,18 +55,15 @@ class ApostaService:
     
     def calcular_odds(self, partida_id: int) -> dict[Palpite, float]:
 
-        quantidade_time_a = self.aposta_dao.contar_apostas_time_a(partida_id)
-        quantidade_time_b = self.aposta_dao.contar_apostas_time_b(partida_id)
+        quantidade_time_a = self.aposta_dao.contar_apostas_time_a(partida_id) + 1
+        quantidade_time_b = self.aposta_dao.contar_apostas_time_b(partida_id) + 1
 
-        if quantidade_time_a == 0:
-            odd_time_a = 1.0
-        else:
-            odd_time_a = 1 + (quantidade_time_b / quantidade_time_a)
+        # Esse +1 na quantidade de cada time serve para que, quando as apostas
+        # de um time ou dos dois sejam 0, o cálculo abaixo não transforme a odd
+        # do time riival em 1, pois isso não seria atrativo para o usuário
 
-        if quantidade_time_b == 0:
-            odd_time_b = 1.0
-        else:
-            odd_time_b = 1 + (quantidade_time_a / quantidade_time_b)
+        odd_time_a = 1 + (quantidade_time_b / quantidade_time_a)
+        odd_time_b = 1 + (quantidade_time_a / quantidade_time_b)
 
         return {
             Palpite.TIME_A: round(odd_time_a, 2),

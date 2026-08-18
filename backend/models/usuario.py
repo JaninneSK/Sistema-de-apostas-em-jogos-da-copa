@@ -70,6 +70,7 @@ class Usuario(Base):
 
     tipo = Column(
         Enum(TipoUsuario),
+        default=TipoUsuario.USUARIO,
         nullable=False
     )
 
