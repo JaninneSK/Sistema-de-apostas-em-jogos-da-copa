@@ -67,6 +67,12 @@ class AdminController:
 
         return self.partida_service.importar_partidas()
 
+    def listar_partidas(self, admin_id: int) -> list[Partida]:
+
+        self.usuario_service.validar_admin(admin_id)
+
+        return self.partida_service.listar_partidas()
+
     def iniciar_partida(self, admin_id: int, partida_id: int) -> Partida:
 
         self.usuario_service.validar_admin(admin_id)

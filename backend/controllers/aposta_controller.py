@@ -24,6 +24,9 @@ class ApostaController:
     def consultar_aposta(self, usuario_id: int, partida_id: int) -> Aposta | None:
         return self.aposta_service.buscar_aposta_por_usuario_e_partida(usuario_id, partida_id)
 
+    def consultar_aposta_por_id(self, aposta_id: int) -> Aposta | None:
+        return self.aposta_service.buscar_aposta(aposta_id)
+
     def listar_apostas_do_usuario(self, usuario_id: int) -> list[Aposta]:
         return self.aposta_service.listar_apostas_por_usuario(usuario_id)
 
