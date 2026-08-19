@@ -59,3 +59,6 @@ class FootballDataAPI:
         dados = self.api_client.get(f"matches/{id_api}")
         
         return self._converter_partida(dados)
+
+    def listar_partidas_copa_2026(self) -> list[PartidaImportacaoSchema]:
+        return self.buscar_partidas_copa_2026()

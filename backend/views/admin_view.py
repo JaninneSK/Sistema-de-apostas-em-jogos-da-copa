@@ -1,6 +1,10 @@
 from backend.controllers.admin_controller import AdminController
 from backend.models.usuario import Usuario
-
+from backend.exceptions.usuario_exception import UsuarioException
+from backend.exceptions.aposta_exception import ApostaException
+from backend.exceptions.partida_exception import PartidaException
+from backend.exceptions.autenticacao_exception import AutenticacaoException
+from backend.exceptions.permissao_exception import PermissaoException
 
 class AdminView:
 
@@ -12,7 +16,7 @@ class AdminView:
         while True:
 
             print(f"\n=== MENU DO ADMINISTRADOR - {admin.nome} ===")
-            print("1 - Importar/Criar partidas da Copa")
+            print("1 - Criar partida a partir da API")
             print("2 - Listar partidas")
             print("3 - Consultar detalhes de uma partida")
             print("4 - Iniciar partida")
@@ -30,7 +34,7 @@ class AdminView:
             try:
 
                 if opcao == "1":
-                    self._importar_partidas(admin.id)
+                    self._criar_partida(admin.id)
 
                 elif opcao == "2":
                     self._listar_partidas(admin.id)
@@ -69,23 +73,55 @@ class AdminView:
                 else:
                     print("\nOpção inválida.")
 
-            except ValueError as erro:
+            except UsuarioException as erro:
+                print("\nErro:", erro)
+
+            except ApostaException as erro:
+                print("\nErro:", erro)
+
+            except PartidaException as erro:
+                print("\nErro:", erro)
+
+            except AutenticacaoException as erro:
+                print("\nErro:", erro)
+
+            except PermissaoException as erro:
                 print("\nErro:", erro)
 
             except RuntimeError as erro:
                 print("\nErro ao acessar a API:", erro)
 
-    def _importar_partidas(self, admin_id: int) -> None:
+            except ValueError as erro:
+                print("\nErro:", erro)
 
-        print("\n=== IMPORTAR PARTIDAS ===")
+    def _criar_partida(self, admin_id: int) -> None:
 
-        partidas = self.admin_controller.importar_partidas(admin_id)
+        print("\n=== CRIAR PARTIDA ===")
+
+        partidas = self.admin_controller.listar_partidas_api(admin_id)
 
         if not partidas:
-            print("Nenhuma nova partida foi importada.")
+            print("Nenhuma partida disponível na API.")
             return
 
-        print(f"{len(partidas)} partidas importadas com sucesso.")
+        for partida in partidas:
+            print(
+                f"\nID API: {partida.id_api} | "
+                f"{partida.time_a} x {partida.time_b} | "
+                f"{partida.data_hora}"
+            )
+
+        id_api = int(input("\nDigite o ID API da partida que deseja criar: "))
+
+        partida = self.admin_controller.criar_partida(
+            admin_id,
+            id_api
+        )
+
+        print("\nPartida criada com sucesso!")
+        print("ID local:", partida.id)
+        print(partida.time_a, "x", partida.time_b)
+        print("Status:", partida.status.value)
 
     def _listar_partidas(self, admin_id: int) -> None:
 

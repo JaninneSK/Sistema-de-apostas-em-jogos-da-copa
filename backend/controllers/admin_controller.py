@@ -4,6 +4,7 @@ from backend.models.usuario import Usuario
 from backend.services.aposta_service import ApostaService
 from backend.services.partida_service import PartidaService
 from backend.services.usuario_service import UsuarioService
+from backend.schemas.partida_schema import PartidaImportacaoSchema
 
 
 class AdminController:
@@ -61,11 +62,18 @@ class AdminController:
 
         return self.usuario_service.desativar_usuario(usuario_id)
 
-    def importar_partidas(self, admin_id: int) -> list[Partida]:
+    def listar_partidas_api(self, admin_id: int) -> list[PartidaImportacaoSchema]:
 
         self.usuario_service.validar_admin(admin_id)
 
-        return self.partida_service.importar_partidas()
+        return self.partida_service.listar_partidas_api()
+
+
+    def criar_partida(self, admin_id: int, id_api: int) -> Partida:
+
+        self.usuario_service.validar_admin(admin_id)
+
+        return self.partida_service.criar_partida(id_api)
 
     def listar_partidas(self, admin_id: int) -> list[Partida]:
 

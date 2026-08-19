@@ -1,0 +1,2 @@
+class ApostaException(Exception):
+    pass

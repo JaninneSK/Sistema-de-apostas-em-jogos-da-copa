@@ -6,6 +6,10 @@ from backend.models.usuario import Usuario
 from backend.schemas.aposta_schema import ApostaCadastroSchema
 from backend.schemas.usuario_schema import UsuarioAtualizacaoSchema
 from backend.utils.enums import Multiplicador, Palpite
+from backend.exceptions.usuario_exception import UsuarioException
+from backend.exceptions.aposta_exception import ApostaException
+from backend.exceptions.partida_exception import PartidaException
+from backend.exceptions.permissao_exception import PermissaoException
 
 
 class UsuarioView:
@@ -78,6 +82,18 @@ class UsuarioView:
 
                 else:
                     print("\nOpção inválida.")
+
+            except UsuarioException as erro:
+                print("\nErro:", erro)
+
+            except ApostaException as erro:
+                print("\nErro:", erro)
+
+            except PartidaException as erro:
+                print("\nErro:", erro)
+
+            except PermissaoException as erro:
+                print("\nErro:", erro)
 
             except ValueError as erro:
                 print("\nErro:", erro)

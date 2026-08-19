@@ -5,6 +5,10 @@ from backend.dao.usuario_dao import UsuarioDAO
 from backend.models.aposta import Aposta
 from backend.schemas.aposta_schema import ApostaCadastroSchema
 from backend.utils.enums import Palpite, StatusAposta, StatusPartida, TipoUsuario, Multiplicador
+from backend.exceptions.aposta_exception import ApostaException
+from backend.exceptions.partida_exception import PartidaException
+from backend.exceptions.usuario_exception import UsuarioException
+from backend.exceptions.permissao_exception import PermissaoException
 
 
 class ApostaService:
@@ -28,7 +32,7 @@ class ApostaService:
         usuario = self.usuario_dao.buscar_por_id(usuario_id)
 
         if not usuario:
-            raise ValueError("Usuário não encontrado.")
+            raise UsuarioException("Usuário não encontrado.")
 
         return self.aposta_dao.listar_por_usuario(usuario_id)
 
@@ -37,7 +41,7 @@ class ApostaService:
         partida = self.partida_dao.buscar_por_id(partida_id)
 
         if not partida:
-            raise ValueError("Partida não encontrada.")
+            raise PartidaException("Partida não encontrada.")
 
         return self.aposta_dao.listar_por_partida(partida_id)
 
@@ -67,7 +71,7 @@ class ApostaService:
         partida = self.partida_dao.buscar_por_id(partida_id)
 
         if not partida:
-            raise ValueError("Partida não encontrada.")
+            raise PartidaException("Partida não encontrada.")
 
         quantidade_time_a = self.aposta_dao.contar_apostas_time_a(partida_id)
         quantidade_time_b = self.aposta_dao.contar_apostas_time_b(partida_id)
@@ -87,7 +91,7 @@ class ApostaService:
         aposta = self.aposta_dao.buscar_por_id(aposta_id)
 
         if not aposta:
-            raise ValueError("Aposta não encontrada.")
+            raise ApostaException("Aposta não encontrada.")
 
         return aposta.status
     
@@ -113,10 +117,10 @@ class ApostaService:
         partida = self.partida_dao.buscar_por_id(partida_id)
 
         if not partida:
-            raise ValueError("Partida não encontrada.")
+            raise PartidaException("Partida não encontrada.")
 
         if partida.status != StatusPartida.AGENDADA:
-            raise ValueError("As apostas desta partida não estão disponíveis.")
+            raise PartidaException("As apostas desta partida não estão disponíveis.")
 
         return self.calcular_odds(partida_id)
 
@@ -125,32 +129,39 @@ class ApostaService:
         usuario = self.usuario_dao.buscar_por_id(usuario_id)
 
         if not usuario:
-            raise ValueError("Usuário não encontrado.")
+            raise UsuarioException("Usuário não encontrado.")
 
         if not usuario.ativo:
-            raise ValueError("Usuário inativo não pode realizar apostas.")
+            raise PermissaoException("Usuário inativo não pode realizar apostas.")
 
         if usuario.tipo == TipoUsuario.ADMIN:
-            raise ValueError("Administrador não pode realizar apostas.")
+            raise PermissaoException("Administrador não pode realizar apostas.")
 
         partida = self.partida_dao.buscar_por_id(dados.partida_id)
 
         if not partida:
-            raise ValueError("Partida não encontrada.")
+            raise PartidaException("Partida não encontrada.")
 
         if partida.status != StatusPartida.AGENDADA:
-            raise ValueError("Só é possível apostar em partidas agendadas.")
+            raise PartidaException("Só é possível apostar em partidas agendadas.")
 
-        aposta_existente = self.aposta_dao.buscar_por_usuario_e_partida(usuario_id, dados.partida_id)
+        aposta_existente = self.aposta_dao.buscar_por_usuario_e_partida(
+            usuario_id,
+            dados.partida_id
+        )
 
         if aposta_existente:
-            raise ValueError("O usuário já realizou uma aposta nesta partida.")
+            raise ApostaException(
+                "O usuário já realizou uma aposta nesta partida."
+            )
 
         multiplicador = Multiplicador.X1.value
         valor_total = dados.valor_apostado
 
         if valor_total > usuario.pontos:
-            raise ValueError("O usuário não possui pontos suficientes para realizar essa aposta.")
+            raise ApostaException(
+                "O usuário não possui pontos suficientes para realizar essa aposta."
+            )
 
         odds = self.calcular_odds(dados.partida_id)
         odd_aplicada = odds[dados.palpite]
@@ -177,37 +188,45 @@ class ApostaService:
         aposta = self.aposta_dao.buscar_por_id(aposta_id)
 
         if not aposta:
-            raise ValueError("Aposta não encontrada.")
+            raise ApostaException("Aposta não encontrada.")
 
         if aposta.usuario_id != usuario_id:
-            raise ValueError("Essa aposta não pertence ao usuário.")
+            raise PermissaoException("Essa aposta não pertence ao usuário.")
 
         if aposta.status != StatusAposta.ATIVA:
-            raise ValueError("Só é possível multiplicar uma aposta ativa.")
+            raise ApostaException("Só é possível multiplicar uma aposta ativa.")
 
         partida = self.partida_dao.buscar_por_id(aposta.partida_id)
 
         if not partida:
-            raise ValueError("Partida não encontrada.")
+            raise PartidaException("Partida não encontrada.")
 
         if partida.status != StatusPartida.AGENDADA:
-            raise ValueError("Não é possível multiplicar a aposta após o início da partida.")
+            raise PartidaException(
+                "Não é possível multiplicar a aposta após o início da partida."
+            )
 
         multiplicador_atual = aposta.multiplicador
         multiplicador_novo = novo_multiplicador.value
 
         if multiplicador_novo <= multiplicador_atual:
-            raise ValueError("O novo multiplicador deve ser maior que o atual.")
+            raise ApostaException(
+                "O novo multiplicador deve ser maior que o atual."
+            )
 
         usuario = self.usuario_dao.buscar_por_id(usuario_id)
 
         if not usuario:
-            raise ValueError("Usuário não encontrado.")
+            raise UsuarioException("Usuário não encontrado.")
 
-        valor_adicional = aposta.valor_apostado * (multiplicador_novo - multiplicador_atual)
+        valor_adicional = aposta.valor_apostado * (
+            multiplicador_novo - multiplicador_atual
+        )
 
         if valor_adicional > usuario.pontos:
-            raise ValueError("O usuário não possui pontos suficientes para multiplicar essa aposta.")
+            raise ApostaException(
+                "O usuário não possui pontos suficientes para multiplicar essa aposta."
+            )
 
         usuario.pontos -= valor_adicional
         aposta.multiplicador = multiplicador_novo
@@ -221,13 +240,13 @@ class ApostaService:
         partida = self.partida_dao.buscar_por_id(partida_id)
 
         if not partida:
-            raise ValueError("Partida não encontrada.")
+            raise PartidaException("Partida não encontrada.")
 
         if partida.status != StatusPartida.FINALIZADA:
-            raise ValueError("A partida ainda não foi finalizada.")
+            raise PartidaException("A partida ainda não foi finalizada.")
 
         if partida.placar_time_a is None or partida.placar_time_b is None:
-            raise ValueError("O placar da partida não foi informado.")
+            raise PartidaException("O placar da partida não foi informado.")
 
         if partida.placar_time_a > partida.placar_time_b:
             return Palpite.TIME_A
@@ -250,10 +269,10 @@ class ApostaService:
         partida = self.partida_dao.buscar_por_id(partida_id)
 
         if not partida:
-            raise ValueError("Partida não encontrada.")
+            raise PartidaException("Partida não encontrada.")
 
         if partida.status != StatusPartida.FINALIZADA:
-            raise ValueError("A partida ainda não foi finalizada.")
+            raise PartidaException("A partida ainda não foi finalizada.")
 
         vencedor = self.identificar_vencedor(partida_id)
         apostas = self.aposta_dao.listar_por_partida(partida_id)
@@ -266,7 +285,7 @@ class ApostaService:
             usuario = self.usuario_dao.buscar_por_id(aposta.usuario_id)
 
             if not usuario:
-                raise ValueError(f"Usuário da aposta {aposta.id} não encontrado.")
+                raise UsuarioException(f"Usuário da aposta {aposta.id} não encontrado.")
 
             valor_total_apostado = aposta.valor_apostado * aposta.multiplicador
 

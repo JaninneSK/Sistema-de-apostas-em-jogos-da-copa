@@ -11,6 +11,9 @@ from backend.utils.validadores import (
     validar_idade
 )
 from backend.utils.seguranca import gerar_hash_senha
+from backend.exceptions.usuario_exception import UsuarioException
+from backend.exceptions.autenticacao_exception import AutenticacaoException
+from backend.exceptions.permissao_exception import PermissaoException
 
 
 class UsuarioService:
@@ -21,23 +24,24 @@ class UsuarioService:
     def cadastrar_usuario(self, dados: UsuarioCadastroSchema) -> Usuario:
 
         if self.usuario_dao.buscar_por_login(dados.login):
-            raise ValueError("Login já cadastrado.")
+            raise UsuarioException("Login já cadastrado.")
 
         if self.usuario_dao.buscar_por_email(dados.email):
-            raise ValueError("E-mail já cadastrado.")
+            raise UsuarioException("E-mail já cadastrado.")
 
         if self.usuario_dao.buscar_por_cpf(dados.cpf):
-            raise ValueError("CPF já cadastrado.")
+            raise UsuarioException("CPF já cadastrado.")
 
         if not validar_cpf(dados.cpf):
-            raise ValueError("CPF inválido.")
+            raise UsuarioException("CPF inválido.")
 
         if not validar_idade(dados.data_nascimento):
-            raise ValueError("Usuário deve possuir idade mínima permitida.")
+            raise UsuarioException("Usuário deve possuir idade mínima permitida.")
 
         if not validar_senha(dados.senha):
-            raise ValueError(
-                "Senha deve possuir no mínimo 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial."
+            raise UsuarioException(
+                "Senha deve possuir no mínimo 8 caracteres, uma letra maiúscula, " \
+                "uma letra minúscula, um número e um caractere especial."
             )
 
         usuario = Usuario(
@@ -52,20 +56,20 @@ class UsuarioService:
 
         return self.usuario_dao.salvar(usuario)
 
-    def autenticar_usuario(self, login: str, senha: str) -> Usuario | None:
+    def autenticar_usuario(self, login: str, senha: str) -> Usuario:
 
         usuario = self.usuario_dao.buscar_por_login(login)
 
         if not usuario:
-            return None
-
-        if not usuario.ativo:
-            return None
+            raise AutenticacaoException("Login ou senha inválidos.")
 
         senha_hash = gerar_hash_senha(senha)
 
         if usuario.senha_hash != senha_hash:
-            return None
+            raise AutenticacaoException("Login ou senha inválidos.")
+
+        if not usuario.ativo:
+            raise AutenticacaoException("Usuário inativo. Acesso ao sistema não permitido.")
 
         return usuario
 
@@ -86,7 +90,7 @@ class UsuarioService:
         usuario = self.usuario_dao.buscar_por_cpf(cpf)
 
         if not usuario:
-            raise ValueError("Usuário não encontrado.")
+            raise UsuarioException("Usuário não encontrado.")
 
         return usuario
 
@@ -107,7 +111,7 @@ class UsuarioService:
         usuario = self.usuario_dao.buscar_por_id(usuario_id)
 
         if not usuario:
-            raise ValueError("Usuário não encontrado.")
+            raise UsuarioException("Usuário não encontrado.")
 
         if dados.nome is not None:
             usuario.nome = dados.nome
@@ -118,8 +122,9 @@ class UsuarioService:
         if dados.senha is not None:
 
             if not validar_senha(dados.senha):
-                raise ValueError(
-                    "Senha deve possuir no mínimo 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial."
+                raise UsuarioException(
+                    "Senha deve possuir no mínimo 8 caracteres, uma letra maiúscula, " \
+                    "uma letra minúscula, um número e um caractere especial."
                 )
 
             usuario.senha_hash = gerar_hash_senha(dados.senha)
@@ -131,7 +136,7 @@ class UsuarioService:
         usuario = self.usuario_dao.buscar_por_id(usuario_id)
 
         if not usuario:
-            raise ValueError("Usuário não encontrado.")
+            raise UsuarioException("Usuário não encontrado.")
 
         usuario.ativo = False
 
@@ -142,12 +147,12 @@ class UsuarioService:
         usuario = self.usuario_dao.buscar_por_id(usuario_id)
 
         if not usuario:
-            raise ValueError("Usuário não encontrado.")
+            raise UsuarioException("Usuário não encontrado.")
 
         if usuario.tipo != TipoUsuario.ADMIN:
-            raise ValueError("Acesso permitido apenas para administradores.")
+            raise PermissaoException("Acesso permitido apenas para administradores.")
 
         if not usuario.ativo:
-            raise ValueError("Administrador inativo.")
+            raise AutenticacaoException("Administrador inativo.")
 
         return usuario

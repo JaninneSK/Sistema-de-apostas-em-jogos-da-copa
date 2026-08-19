@@ -5,6 +5,8 @@ from backend.views.admin_view import AdminView
 from backend.controllers.usuario_controller import UsuarioController
 from backend.schemas.usuario_schema import UsuarioCadastroSchema
 from backend.utils.enums import TipoUsuario
+from backend.exceptions.usuario_exception import UsuarioException
+from backend.exceptions.autenticacao_exception import AutenticacaoException
 
 
 class MenuView:
@@ -50,7 +52,12 @@ class MenuView:
             login = input("Login: ")
             senha = input("Senha: ")
 
-            data_nascimento = datetime.strptime(data_nascimento, "%d/%m/%Y").date()
+            try:
+                data_nascimento = datetime.strptime(data_nascimento,"%d/%m/%Y").date()
+
+            except ValueError:
+                print("\nErro: Data de nascimento inválida. Use o formato dd/mm/aaaa.")
+                return
 
             dados = UsuarioCadastroSchema(
                 nome=nome,
@@ -67,6 +74,9 @@ class MenuView:
             print("ID:", usuario.id)
             print("Nome:", usuario.nome)
             print("Pontos iniciais:", usuario.pontos)
+
+        except UsuarioException as erro:
+            print("\nErro:", erro)
 
         except ValueError as erro:
             print("\nErro:", erro)
@@ -90,10 +100,6 @@ class MenuView:
         try:
             usuario = self.usuario_controller.autenticar(login, senha)
 
-            if not usuario:
-                print("\nLogin ou senha inválidos.")
-                return
-
             print(f"\nBem-vindo(a), {usuario.nome}!")
 
             if usuario.tipo == TipoUsuario.ADMIN:
@@ -101,6 +107,9 @@ class MenuView:
 
             else:
                 self.usuario_view.executar(usuario)
+
+        except AutenticacaoException as erro:
+            print("\nErro:", erro)
 
         except ValueError as erro:
             print("\nErro:", erro)
