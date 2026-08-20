@@ -1,6 +1,6 @@
-class PartidaException(Exception):
+class AutenticacaoException(Exception):
     """
-    Representa erros relacionados às regras de negócio das partidas.
+    Representa erros que acontecem durante a autenticação no sistema.
     """
 
     pass

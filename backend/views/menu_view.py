@@ -8,13 +8,16 @@ from backend.utils.enums import TipoUsuario
 from backend.exceptions.usuario_exception import UsuarioException
 from backend.exceptions.autenticacao_exception import AutenticacaoException
 
+from backend.views.usuario_view import UsuarioView
+from backend.views.admin_view import AdminView
+
 
 class MenuView:
     """
     Exibe o menu inicial do sistema e controla o cadastro e login dos usuários.
     """
 
-    def __init__(self, usuario_controller: UsuarioController, usuario_view, admin_view):
+    def __init__(self, usuario_controller: UsuarioController, usuario_view: UsuarioView, admin_view: AdminView):
         self.usuario_controller = usuario_controller
         self.usuario_view = usuario_view
         self.admin_view = admin_view
@@ -62,10 +65,7 @@ class MenuView:
             senha = input("Senha: ")
 
             try:
-                data_nascimento = datetime.strptime(
-                    data_nascimento,
-                    "%d/%m/%Y"
-                ).date()
+                data_nascimento = datetime.strptime(data_nascimento, "%d/%m/%Y").date()
 
             except ValueError:
                 print("\nErro: Data de nascimento inválida. Use o formato dd/mm/aaaa.")
@@ -124,4 +124,7 @@ class MenuView:
                 self.usuario_view.executar(usuario)
 
         except AutenticacaoException as erro:
+            print("\nErro:", erro)
+
+        except ValueError as erro:
             print("\nErro:", erro)

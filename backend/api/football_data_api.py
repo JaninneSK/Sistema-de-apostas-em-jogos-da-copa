@@ -31,6 +31,7 @@ class FootballDataAPI:
             partidas.append(partida)
 
         return partidas
+        
 
     def buscar_partida_por_id(self, id_api: int) -> PartidaImportacaoSchema:
         """
@@ -58,9 +59,7 @@ class FootballDataAPI:
         if status_api == "FINISHED":
             return StatusPartida.FINALIZADA
 
-        raise ValueError(
-            f"Status da API não reconhecido: {status_api}"
-        )
+        raise ValueError(f"Status da API não reconhecido: {status_api}")
 
     def _converter_partida(self, dados: dict) -> PartidaImportacaoSchema:
         """

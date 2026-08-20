@@ -22,9 +22,7 @@ class PartidaResponseSchema(BaseModel):
     Define os dados de uma partida que podem ser retornados pelo sistema.
     """
 
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     id_api: int

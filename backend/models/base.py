@@ -1,6 +1,7 @@
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
 
-# Essa Base é usada como classe pai dos Models para que o SQLAlchemy
+# Essa classe é usada como base dos Models para que o SQLAlchemy
 # reconheça essas classes e consiga mapeá-las para as tabelas do banco
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass

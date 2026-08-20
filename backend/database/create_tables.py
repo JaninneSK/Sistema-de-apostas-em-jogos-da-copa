@@ -13,12 +13,7 @@ def criar_tabelas():
     Cria no banco todas as tabelas definidas pelos Models do sistema.
     """
 
-    # Os Models são importados neste arquivo para que o SQLAlchemy conheça
-    # todas as tabelas antes de executar o create_all
-    print("URL do banco:", engine.url)
-
     Base.metadata.create_all(bind=engine)
-
     print("Tabelas criadas com sucesso!")
 
 
