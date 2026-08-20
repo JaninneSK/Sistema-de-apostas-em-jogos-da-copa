@@ -7,36 +7,54 @@ from backend.exceptions.partida_exception import PartidaException
 
 
 class PartidaService:
+    """
+    Reúne as regras de negócio relacionadas às partidas do sistema.
+    """
 
     def __init__(self, partida_dao: PartidaDAO, football_api: FootballDataAPI):
         self.partida_dao = partida_dao
         self.football_api = football_api
 
     def buscar_partida(self, partida_id: int) -> Partida | None:
+        """
+        Busca uma partida pelo seu ID.
+        """
         return self.partida_dao.buscar_por_id(partida_id)
 
-
     def listar_partidas(self) -> list[Partida]:
+        """
+        Retorna todas as partidas cadastradas no sistema.
+        """
         return self.partida_dao.listar()
 
-
     def listar_agendadas(self) -> list[Partida]:
+        """
+        Retorna as partidas que ainda estão disponíveis para apostas.
+        """
         return self.partida_dao.listar_agendadas()
 
-
     def listar_em_andamento(self) -> list[Partida]:
+        """
+        Retorna as partidas que já foram iniciadas.
+        """
         return self.partida_dao.listar_em_andamento()
 
-
     def listar_finalizadas(self) -> list[Partida]:
+        """
+        Retorna as partidas que já foram finalizadas.
+        """
         return self.partida_dao.listar_finalizadas()
 
-
     def listar_partidas_api(self) -> list[PartidaImportacaoSchema]:
+        """
+        Retorna as partidas da Copa do Mundo de 2026 disponíveis na API.
+        """
         return self.football_api.buscar_partidas_copa_2026()
 
-
     def criar_partida(self, id_api: int) -> Partida:
+        """
+        Cria uma nova partida no sistema a partir dos dados obtidos pela API.
+        """
 
         partida_existente = self.partida_dao.buscar_por_id_api(id_api)
 
@@ -45,6 +63,9 @@ class PartidaService:
 
         dados = self.football_api.buscar_partida_por_id(id_api)
 
+        # Como a Copa de 2026 já foi encerrada, as partidas da API aparecem como
+        # finalizadas. No sistema elas começam como agendadas para que seja possível
+        # simular o processo de aposta, início e encerramento da partida
         partida = Partida(
             id_api=dados.id_api,
             time_a=dados.time_a,
@@ -57,8 +78,10 @@ class PartidaService:
 
         return self.partida_dao.salvar(partida)
 
-
     def iniciar_partida(self, partida_id: int) -> Partida:
+        """
+        Inicia uma partida agendada e bloqueia novas apostas nela.
+        """
 
         partida = self.partida_dao.buscar_por_id(partida_id)
 
@@ -72,8 +95,11 @@ class PartidaService:
 
         return self.partida_dao.atualizar(partida)
 
-
     def finalizar_partida(self, partida_id: int) -> Partida:
+        """
+        Finaliza uma partida em andamento utilizando o placar real obtido
+        através da API.
+        """
 
         partida = self.partida_dao.buscar_por_id(partida_id)
 
@@ -83,6 +109,8 @@ class PartidaService:
         if partida.status != StatusPartida.EM_ANDAMENTO:
             raise PartidaException("Apenas partidas em andamento podem ser finalizadas.")
 
+        # O resultado é buscado novamente na API apenas no encerramento para que
+        # o placar real não fique disponível enquanto a partida ainda está aberta
         dados_api = self.football_api.buscar_partida_por_id(partida.id_api)
 
         partida.placar_time_a = dados_api.placar_time_a
@@ -91,8 +119,10 @@ class PartidaService:
 
         return self.partida_dao.atualizar(partida)
 
-
     def buscar_resultados_por_selecao(self, selecao: str) -> list[PartidaImportacaoSchema]:
+        """
+        Busca na API os resultados das partidas já finalizadas de uma seleção.
+        """
 
         partidas = self.football_api.buscar_partidas_copa_2026()
 

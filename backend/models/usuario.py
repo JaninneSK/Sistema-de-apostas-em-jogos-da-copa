@@ -3,8 +3,8 @@ from sqlalchemy import (
     Integer,
     String,
     Date,
-    Boolean,
-    Enum
+    Enum,
+    Boolean
 )
 
 from sqlalchemy.orm import relationship
@@ -14,6 +14,10 @@ from backend.utils.enums import TipoUsuario
 
 
 class Usuario(Base):
+    """
+    Representa os usuários cadastrados no sistema, incluindo usuários comuns
+    e administradores.
+    """
 
     __tablename__ = "usuarios"
 

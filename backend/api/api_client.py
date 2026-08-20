@@ -1,15 +1,22 @@
 import os
+
 import requests
 from dotenv import load_dotenv
 
 
 load_dotenv()
 
+
 class APIClient:
+    """
+    Responsável pela comunicação com a API football-data.org.
+    """
 
     BASE_URL = "https://api.football-data.org/v4"
 
     def __init__(self):
+
+        # Busca o token da api que está no arquivo .env
         self.token = os.getenv("FOOTBALL_DATA_TOKEN")
 
         if not self.token:
@@ -20,6 +27,9 @@ class APIClient:
         }
 
     def get(self, endpoint: str, params: dict | None = None) -> dict:
+        """
+        Realiza uma requisição GET para a API e retorna os dados recebidos.
+        """
 
         url = f"{self.BASE_URL}/{endpoint}"
 

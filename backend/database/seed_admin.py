@@ -1,15 +1,21 @@
 from datetime import date
 
-import backend.models
-
 from backend.config.database import SessionLocal
 from backend.dao.usuario_dao import UsuarioDAO
 from backend.models.usuario import Usuario
 from backend.utils.enums import TipoUsuario
 from backend.utils.seguranca import gerar_hash_senha
+from backend.models.usuario import Usuario
+from backend.models.partida import Partida
+from backend.models.aposta import Aposta
 
 
 def criar_admin():
+    """
+    Cria o administrador inicial do sistema caso ele ainda não esteja
+    cadastrado no banco.
+    """
+
     session = SessionLocal()
 
     try:
@@ -17,15 +23,17 @@ def criar_admin():
 
         admin_existente = usuario_dao.buscar_por_login("admin")
 
+        # O administrador não pode ser cadastrado pela tela de criação de conta,
+        # então ele é criado diretamente no banco na primeira execução deste arquivo
         if admin_existente:
             print("Administrador já cadastrado.")
             return
 
         admin = Usuario(
             nome="Administrador",
-            email="admin@email.com",
+            email="admin@gmail.com",
             cpf="00000000000",
-            data_nascimento=date(1990, 1, 1),
+            data_nascimento=date(1986, 7, 12),
             login="admin",
             senha_hash=gerar_hash_senha("Admin@123"),
             tipo=TipoUsuario.ADMIN,

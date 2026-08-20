@@ -13,6 +13,10 @@ from backend.utils.enums import StatusPartida
 
 
 class Partida(Base):
+    """
+    Representa uma partida da Copa cadastrada no sistema e o seu estado
+    durante o processo de apostas.
+    """
 
     __tablename__ = "partidas"
 

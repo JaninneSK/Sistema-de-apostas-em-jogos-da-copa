@@ -13,6 +13,9 @@ from backend.exceptions.permissao_exception import PermissaoException
 
 
 class UsuarioView:
+    """
+    Exibe o menu e as funcionalidades disponíveis para os usuários comuns.
+    """
 
     def __init__(self, usuario_controller: UsuarioController, aposta_controller: ApostaController, partida_controller: PartidaController):
         self.usuario_controller = usuario_controller
@@ -20,6 +23,10 @@ class UsuarioView:
         self.partida_controller = partida_controller
 
     def executar(self, usuario: Usuario) -> None:
+        """
+        Mantém o menu do usuário em execução até que ele faça logout
+        ou cancele sua participação.
+        """
 
         while True:
 
@@ -108,6 +115,9 @@ class UsuarioView:
                     print(f"- {campo}: {mensagem}")
 
     def _mostrar_perfil(self, usuario_id: int) -> None:
+        """
+        Exibe os dados do perfil do usuário.
+        """
 
         usuario = self.usuario_controller.consultar_perfil(usuario_id)
 
@@ -125,6 +135,9 @@ class UsuarioView:
         print("Status:", "Ativo" if usuario.ativo else "Inativo")
 
     def _alterar_senha(self, usuario_id: int) -> None:
+        """
+        Solicita uma nova senha e envia os dados para atualização.
+        """
 
         print("\n=== ALTERAR SENHA ===")
 
@@ -142,6 +155,9 @@ class UsuarioView:
         print("\nSenha alterada com sucesso.")
 
     def _mostrar_resultados_selecao(self) -> None:
+        """
+        Busca e exibe os resultados anteriores de uma seleção.
+        """
 
         print("\n=== RESULTADOS ANTERIORES ===")
 
@@ -167,6 +183,9 @@ class UsuarioView:
             print("Data:", partida.data_hora)
 
     def _mostrar_apostas_disponiveis(self) -> None:
+        """
+        Exibe as partidas disponíveis para apostas junto com suas odds.
+        """
 
         print("\n=== APOSTAS DISPONÍVEIS ===")
 
@@ -186,6 +205,9 @@ class UsuarioView:
             print(f"{partida.time_b} - Odd: {dados['odd_time_b']}")
 
     def _registrar_aposta(self, usuario_id: int) -> None:
+        """
+        Coleta os dados necessários e registra uma nova aposta.
+        """
 
         print("\n=== REGISTRAR APOSTA ===")
 
@@ -230,6 +252,9 @@ class UsuarioView:
         print("Multiplicador:", aposta.multiplicador)
 
     def _mostrar_apostas_usuario(self, usuario_id: int) -> None:
+        """
+        Exibe todas as apostas realizadas pelo usuário.
+        """
 
         print("\n=== MINHAS APOSTAS ===")
 
@@ -248,6 +273,8 @@ class UsuarioView:
             if partida:
                 print("Partida:", partida.time_a, "x", partida.time_b)
 
+            # O palpite é armazenado como TIME_A ou TIME_B, mas aqui é mostrado
+            # o nome do time para deixar a informação mais clara para o usuário
             if aposta.palpite == Palpite.TIME_A:
                 time_apostado = partida.time_a
             else:
@@ -260,6 +287,9 @@ class UsuarioView:
             print("Status:", aposta.status.value)
 
     def _consultar_status_aposta(self, usuario_id: int) -> None:
+        """
+        Exibe o status de uma aposta pertencente ao usuário.
+        """
 
         print("\n=== STATUS DA APOSTA ===")
 
@@ -278,6 +308,9 @@ class UsuarioView:
         print("\nStatus:", status.value)
 
     def _multiplicar_aposta(self, usuario_id: int) -> None:
+        """
+        Permite aumentar o multiplicador de uma aposta ativa.
+        """
 
         print("\n=== MULTIPLICAR APOSTA ===")
 
@@ -309,6 +342,9 @@ class UsuarioView:
         print("Novo multiplicador:", aposta.multiplicador)
 
     def _mostrar_saldo(self, usuario_id: int) -> None:
+        """
+        Exibe a quantidade de pontos disponíveis do usuário.
+        """
 
         saldo = self.usuario_controller.consultar_saldo(usuario_id)
 
@@ -316,6 +352,9 @@ class UsuarioView:
         print("Pontos disponíveis:", saldo)
 
     def _mostrar_ranking(self) -> None:
+        """
+        Exibe o ranking dos usuários de acordo com seus acertos e pontos.
+        """
 
         ranking = self.usuario_controller.consultar_ranking()
 
@@ -338,6 +377,9 @@ class UsuarioView:
             posicao += 1
 
     def _cancelar_participacao(self, usuario_id: int) -> bool:
+        """
+        Confirma a decisão do usuário e desativa sua participação no sistema.
+        """
 
         print("\n=== CANCELAR PARTICIPAÇÃO ===")
         print("Sua conta ficará inativa e você não poderá mais realizar login.")

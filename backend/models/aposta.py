@@ -17,6 +17,10 @@ from backend.utils.enums import (
 
 
 class Aposta(Base):
+    """
+    Representa uma aposta feita por um usuário, mantendo o palpite, a odd
+    armazenada no momento da aposta e o resultado após o fim da partida.
+    """
 
     __tablename__ = "apostas"
 

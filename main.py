@@ -24,24 +24,30 @@ from backend.views.menu_view import MenuView
 
 
 def main():
+    """
+    Prepara as partes necessárias para o funcionamento do sistema e
+    inicia o menu principal.
+    """
+
     session = SessionLocal()
 
     try:
-        # DAOs
+        # Os DAOs recebem a sessão para realizar as operações no banco
         usuario_dao = UsuarioDAO(session)
         partida_dao = PartidaDAO(session)
         aposta_dao = ApostaDAO(session)
 
-        # API
+        # Prepara a comunicação com a API utilizada para buscar as partidas
         api_client = APIClient()
         football_api = FootballDataAPI(api_client)
 
-        # Services
+        # Os Services utilizam os DAOs para acessar os dados e aplicar
+        # as regras de negócio do sistema
         usuario_service = UsuarioService(usuario_dao)
         partida_service = PartidaService(partida_dao, football_api)
         aposta_service = ApostaService(aposta_dao, usuario_dao, partida_dao)
 
-        # Controllers
+        # Os Controllers fazem a comunicação entre as Views e os Services
         usuario_controller = UsuarioController(usuario_service)
         partida_controller = PartidaController(partida_service)
         aposta_controller = ApostaController(aposta_service)
@@ -52,7 +58,8 @@ def main():
             aposta_service
         )
 
-        # Views
+        # As Views recebem os Controllers necessários para executar as
+        # funcionalidades de cada menu
         usuario_view = UsuarioView(
             usuario_controller,
             aposta_controller,
@@ -69,7 +76,7 @@ def main():
             admin_view
         )
 
-        # Início da aplicação
+        # Inicia a aplicação pelo menu principal
         menu_view.executar()
 
     finally:

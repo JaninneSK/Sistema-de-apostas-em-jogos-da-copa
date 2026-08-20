@@ -7,12 +7,19 @@ from backend.exceptions.autenticacao_exception import AutenticacaoException
 from backend.exceptions.permissao_exception import PermissaoException
 from backend.utils.enums import Palpite
 
+
 class AdminView:
+    """
+    Exibe o menu e as funcionalidades disponíveis para o administrador.
+    """
 
     def __init__(self, admin_controller: AdminController):
         self.admin_controller = admin_controller
 
     def executar(self, admin: Usuario) -> None:
+        """
+        Mantém o menu do administrador em execução até que ele faça logout.
+        """
 
         while True:
 
@@ -96,6 +103,10 @@ class AdminView:
                 print("\nErro:", erro)
 
     def _criar_partida(self, admin_id: int) -> None:
+        """
+        Exibe as partidas da API e permite que o administrador escolha uma
+        para cadastrar no sistema.
+        """
 
         print("\n=== CRIAR PARTIDA ===")
 
@@ -125,6 +136,9 @@ class AdminView:
         print("Status:", partida.status.value)
 
     def _listar_partidas(self, admin_id: int) -> None:
+        """
+        Exibe todas as partidas cadastradas no sistema.
+        """
 
         partidas = self.admin_controller.listar_partidas(admin_id)
 
@@ -149,6 +163,9 @@ class AdminView:
                 )
 
     def _consultar_detalhes_partida(self, admin_id: int) -> None:
+        """
+        Exibe os times, a quantidade de apostadores e as odds da partida.
+        """
 
         print("\n=== DETALHES DA PARTIDA ===")
 
@@ -180,6 +197,9 @@ class AdminView:
         )
 
     def _iniciar_partida(self, admin_id: int) -> None:
+        """
+        Solicita o início de uma partida agendada.
+        """
 
         print("\n=== INICIAR PARTIDA ===")
 
@@ -195,6 +215,9 @@ class AdminView:
         print("Status:", partida.status.value)
 
     def _finalizar_partida(self, admin_id: int) -> None:
+        """
+        Finaliza uma partida e exibe o resultado das apostas processadas.
+        """
 
         print("\n=== FINALIZAR PARTIDA ===")
 
@@ -213,10 +236,13 @@ class AdminView:
             partida.placar_time_b,
             partida.time_b
         )
+
         partida = self.admin_controller.buscar_partida(admin_id, partida_id)
 
         for aposta in apostas:
 
+            # O palpite fica salvo como TIME_A ou TIME_B, então aqui ele é
+            # convertido para o nome do time antes de ser exibido
             if aposta.palpite == Palpite.TIME_A:
                 time_apostado = partida.time_a
             else:
@@ -229,6 +255,9 @@ class AdminView:
             print("Pontos ganhos:", aposta.pontos_ganhos)
 
     def _exibir_usuario(self, usuario: Usuario) -> None:
+        """
+        Exibe os dados de um usuário.
+        """
 
         print("\n=== DADOS DO USUÁRIO ===")
         print("ID:", usuario.id)
@@ -242,6 +271,9 @@ class AdminView:
         print("Status:", "Ativo" if usuario.ativo else "Inativo")
 
     def _exibir_usuarios(self, usuarios: list[Usuario]) -> None:
+        """
+        Exibe os dados de uma lista de usuários.
+        """
 
         if not usuarios:
             print("Nenhum usuário encontrado.")
@@ -251,6 +283,9 @@ class AdminView:
             self._exibir_usuario(usuario)
 
     def _listar_usuarios(self, admin_id: int) -> None:
+        """
+        Exibe todos os usuários comuns cadastrados.
+        """
 
         usuarios = self.admin_controller.listar_usuarios(admin_id)
 
@@ -259,6 +294,9 @@ class AdminView:
         self._exibir_usuarios(usuarios)
 
     def _listar_usuarios_ativos(self, admin_id: int) -> None:
+        """
+        Exibe os usuários que estão ativos.
+        """
 
         usuarios = self.admin_controller.listar_usuarios_ativos(admin_id)
 
@@ -267,6 +305,9 @@ class AdminView:
         self._exibir_usuarios(usuarios)
 
     def _listar_usuarios_inativos(self, admin_id: int) -> None:
+        """
+        Exibe os usuários que estão inativos.
+        """
 
         usuarios = self.admin_controller.listar_usuarios_inativos(admin_id)
 
@@ -275,6 +316,9 @@ class AdminView:
         self._exibir_usuarios(usuarios)
 
     def _pesquisar_usuario(self, admin_id: int) -> None:
+        """
+        Permite pesquisar um usuário por ID, CPF, login ou e-mail.
+        """
 
         while True:
 
@@ -337,6 +381,9 @@ class AdminView:
             self._exibir_usuario(usuario)
 
     def _consultar_apostas_partida(self, admin_id: int) -> None:
+        """
+        Exibe todas as apostas feitas em uma determinada partida.
+        """
 
         print("\n=== APOSTAS DA PARTIDA ===")
 
@@ -355,6 +402,8 @@ class AdminView:
 
         for aposta in apostas:
 
+            # O palpite fica salvo como TIME_A ou TIME_B, então aqui ele é
+            # convertido para o nome do time antes de ser exibido
             if aposta.palpite == Palpite.TIME_A:
                 time_apostado = partida.time_a
             else:
@@ -369,6 +418,9 @@ class AdminView:
             print("Status:", aposta.status.value)
 
     def _mostrar_ranking(self, admin_id: int) -> None:
+        """
+        Exibe o ranking dos usuários.
+        """
 
         ranking = self.admin_controller.consultar_ranking(admin_id)
 
@@ -391,6 +443,9 @@ class AdminView:
             posicao += 1
 
     def _exibir_usuarios(self, usuarios: list[Usuario]) -> None:
+        """
+        Exibe os dados de uma lista de usuários.
+        """
 
         if not usuarios:
             print("Nenhum usuário encontrado.")
