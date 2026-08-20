@@ -5,7 +5,7 @@ from backend.services.aposta_service import ApostaService
 from backend.services.partida_service import PartidaService
 from backend.services.usuario_service import UsuarioService
 from backend.schemas.partida_schema import PartidaImportacaoSchema
-
+from backend.exceptions.partida_exception import PartidaException
 
 class AdminController:
 
@@ -74,6 +74,17 @@ class AdminController:
         self.usuario_service.validar_admin(admin_id)
 
         return self.partida_service.criar_partida(id_api)
+
+    def buscar_partida(self, admin_id: int, partida_id: int) -> Partida:
+
+        self.usuario_service.validar_admin(admin_id)
+
+        partida = self.partida_service.buscar_partida(partida_id)
+
+        if not partida:
+            raise PartidaException("Partida não encontrada.")
+
+        return partida
 
     def listar_partidas(self, admin_id: int) -> list[Partida]:
 

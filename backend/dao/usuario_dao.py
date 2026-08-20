@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from backend.models.usuario import Usuario
+from backend.utils.enums import TipoUsuario
 
 
 class UsuarioDAO:
@@ -43,26 +44,40 @@ class UsuarioDAO:
         )
 
     def listar(self) -> list[Usuario]:
-        return self.session.query(Usuario).all()
+        return (
+            self.session.query(Usuario)
+            .filter(Usuario.tipo == TipoUsuario.USUARIO)
+            .all()
+        )
     
     def listar_ativos(self) -> list[Usuario]:
         return (
             self.session.query(Usuario)
-            .filter(Usuario.ativo.is_(True))
+            .filter(
+                Usuario.tipo == TipoUsuario.USUARIO,
+                Usuario.ativo == True
+            )
             .all()
         )
     
     def listar_inativos(self) -> list[Usuario]:
         return (
             self.session.query(Usuario)
-            .filter(Usuario.ativo.is_(False))
+            .filter(
+                Usuario.tipo == TipoUsuario.USUARIO,
+                Usuario.ativo == False
+            )
             .all()
         )
-
+    
     def listar_ranking(self) -> list[Usuario]:
         return (
             self.session.query(Usuario)
-            .order_by(Usuario.quantidade_acertos.desc())
+            .filter(Usuario.tipo == TipoUsuario.USUARIO)
+            .order_by(
+                Usuario.quantidade_acertos.desc(),
+                Usuario.pontos.desc()
+            )
             .all()
         )
 

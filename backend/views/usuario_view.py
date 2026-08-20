@@ -122,7 +122,7 @@ class UsuarioView:
         print("Login:", usuario.login)
         print("Pontos:", usuario.pontos)
         print("Acertos:", usuario.quantidade_acertos)
-        print("Ativo:", usuario.ativo)
+        print("Status:", "Ativo" if usuario.ativo else "Inativo")
 
     def _alterar_senha(self, usuario_id: int) -> None:
 
@@ -248,7 +248,12 @@ class UsuarioView:
             if partida:
                 print("Partida:", partida.time_a, "x", partida.time_b)
 
-            print("Palpite:", aposta.palpite.value)
+            if aposta.palpite == Palpite.TIME_A:
+                time_apostado = partida.time_a
+            else:
+                time_apostado = partida.time_b
+
+            print("Palpite:", time_apostado)
             print("Valor:", aposta.valor_apostado)
             print("Multiplicador:", aposta.multiplicador)
             print("Odd:", aposta.odd_aplicada)

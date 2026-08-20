@@ -5,6 +5,7 @@ from backend.exceptions.aposta_exception import ApostaException
 from backend.exceptions.partida_exception import PartidaException
 from backend.exceptions.autenticacao_exception import AutenticacaoException
 from backend.exceptions.permissao_exception import PermissaoException
+from backend.utils.enums import Palpite
 
 class AdminView:
 
@@ -212,14 +213,18 @@ class AdminView:
             partida.placar_time_b,
             partida.time_b
         )
-
-        print("\nApostas processadas:", len(apostas))
+        partida = self.admin_controller.buscar_partida(admin_id, partida_id)
 
         for aposta in apostas:
 
+            if aposta.palpite == Palpite.TIME_A:
+                time_apostado = partida.time_a
+            else:
+                time_apostado = partida.time_b
+
             print(f"\nAposta ID: {aposta.id}")
             print("Usuário ID:", aposta.usuario_id)
-            print("Palpite:", aposta.palpite.value)
+            print("Palpite:", time_apostado)
             print("Status:", aposta.status.value)
             print("Pontos ganhos:", aposta.pontos_ganhos)
 
@@ -234,7 +239,7 @@ class AdminView:
         print("Pontos:", usuario.pontos)
         print("Acertos:", usuario.quantidade_acertos)
         print("Tipo:", usuario.tipo.value)
-        print("Ativo:", usuario.ativo)
+        print("Status:", "Ativo" if usuario.ativo else "Inativo")
 
     def _exibir_usuarios(self, usuarios: list[Usuario]) -> None:
 
@@ -346,11 +351,18 @@ class AdminView:
             print("\nNenhuma aposta encontrada para essa partida.")
             return
 
+        partida = self.admin_controller.buscar_partida(admin_id, partida_id)
+
         for aposta in apostas:
+
+            if aposta.palpite == Palpite.TIME_A:
+                time_apostado = partida.time_a
+            else:
+                time_apostado = partida.time_b
 
             print(f"\nAposta ID: {aposta.id}")
             print("Usuário ID:", aposta.usuario_id)
-            print("Palpite:", aposta.palpite.value)
+            print("Palpite:", time_apostado)
             print("Valor:", aposta.valor_apostado)
             print("Multiplicador:", aposta.multiplicador)
             print("Odd:", aposta.odd_aplicada)
@@ -393,4 +405,4 @@ class AdminView:
             print("Pontos:", usuario.pontos)
             print("Acertos:", usuario.quantidade_acertos)
             print("Tipo:", usuario.tipo.value)
-            print("Ativo:", usuario.ativo)
+            print("Status:", "Ativo" if usuario.ativo else "Inativo")
